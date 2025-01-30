@@ -1,0 +1,4 @@
+(executable
+ (public_name expense_tracker)
+ (name main)
+ (libraries expense_tracker))
