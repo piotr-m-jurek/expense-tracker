@@ -59,19 +59,24 @@ module Expenses = struct
     Printf.printf "Total expenses: %.2f\n" total
   ;;
 
+  let is_month_matching (e : Expense.t) ~(month : string) : bool =
+    let expense_date = Utils.Date.make e.date in
+    Utils.Date.month expense_date
+    |> Option.value_map ~default:false ~f:(String.equal month)
+  ;;
+
+  let is_year_matching (e : Expense.t) ~(year : string) : bool =
+    let expense_date = Utils.Date.make e.date in
+    let expense_year = Utils.Date.year @@ expense_date in
+    Option.value_map expense_year ~default:false ~f:(String.equal year)
+  ;;
+
   let month_summary t ~month =
     let total =
       List.fold t.list ~init:0. ~f:(fun acc e ->
-        let expense_date = Utils.Date.make e.date in
-        let expense_month = Utils.Date.month expense_date in
-        let current_year = Utils.Date.year @@ Utils.Date.now () in
-        let expense_year = Utils.Date.year @@ expense_date in
-        let matching_month =
-          expense_month |> Option.map ~f:(fun v -> String.equal month v) |> Option.is_some
-        in
-        let matching_year =
-          Option.is_some @@ Option.map2 current_year expense_year ~f:String.equal
-        in
+        let matching_month = is_month_matching e ~month in
+        let current_year = Option.value_exn @@ Utils.Date.year @@ Utils.Date.now () in
+        let matching_year = is_year_matching e ~year:current_year in
         if matching_month && matching_year then acc +. e.amount else acc)
     in
     Printf.printf "Total expenses for %s: %.2f\n" month total
