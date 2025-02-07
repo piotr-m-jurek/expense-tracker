@@ -1,88 +1,58 @@
 open Core
 
-let ( << ) f g x = f (g x)
-let ( >> ) f g x = g (f x)
-
-module type CsvOps = sig
+module type FileContent = sig
   type t
 
-  val read_csv : string -> string list * string list list
-  val write_csv : string -> string list -> string list list -> unit
+  val serialize : t -> string list
+  val deserialize : string list -> t
 end
 
-module CsvOps : CsvOps = struct
-  type t
+module type CsvOpsType = sig
+  type content
 
-  let read_csv filename =
-    match filename |> In_channel.read_lines with
-    | [] -> [], []
-    | header :: data ->
-      let header = String.split ~on:',' header in
-      let data = List.map data ~f:(String.split ~on:',') in
-      header, data
-  ;;
-
-  let write_csv filename headers data =
-    let headers = String.concat ~sep:"," headers in
-    data
-    |> List.map ~f:(fun row -> String.concat ~sep:"," row)
-    |> fun lines -> Out_channel.write_lines filename (headers :: lines)
-  ;;
+  val read_csv : filename:string -> content
+  val write_csv : filename:string -> content -> unit
 end
 
-type ex = Domain.Expense.t
+module CsvOps (Content : FileContent) : CsvOpsType with type content = Content.t = struct
+  type content = Content.t
 
-module CsvTypedParser = struct
-  exception CSVParsingError of string
-
-  let parse_int s =
-    match Int.of_string_opt s with
-    | Some i -> i
-    | None ->
-      let error = Printf.sprintf "Error parsing int '%s'" s in
-      raise (CSVParsingError error)
+  let read_csv ~filename =
+    Content.deserialize
+    @@ Stdio.In_channel.with_file filename ~f:Stdio.In_channel.input_lines
   ;;
 
-  let parse_float s =
-    match Float.of_string_opt s with
-    | Some f -> f
-    | None ->
-      let error = Printf.sprintf "Error parsing float '%s'" s in
-      raise (CSVParsingError error)
-  ;;
-
-  let parse_bool s =
-    match String.lowercase s with
-    | "false" | "0" | "no" -> false
-    | "true" | "1" | "yes" -> true
-    | _ ->
-      let error = Printf.sprintf "Error parsing bool '%s'" s in
-      raise (CSVParsingError error)
-  ;;
-
-  let parse_string s =
-    match String.strip s with
-    | "" ->
-      let error = Printf.sprintf "Error parsing bool '%s'" s in
-      raise (CSVParsingError error)
-    | s -> Some s
+  let write_csv ~filename (data : content) =
+    Content.serialize data |> Stdio.Out_channel.write_lines filename
   ;;
 end
 
-module CsvProcessor (CsvOps : CsvOps) = struct
-  type t = CsvOps.t
+module ExpensesCsv = struct
+  let header = [ "ID"; "AMOUNT"; "DESCRIPTION"; "DATE" ]
 
-  let parse_typed_csv filename =
-    let headers, data = CsvOps.read_csv filename in
-    let parse_row row = row in
-    headers, List.map data ~f:parse_row
-  ;;
+  type t = Domain.Expense.t list
 
-  let filter_rows ~predicate csv_data = List.filter csv_data ~f:predicate
-  let map_rows ~f csv_data = List.map csv_data ~f
+  let serialize _ = []
 
-  let print_csv csv_data =
-    let print_row = String.concat ~sep:"," >> Printf.printf "%s\n" in
-    csv_data |> List.iter ~f:print_row
+  let deserialize (lines : string list) : t =
+    match lines with
+    | hd :: rest when List.equal String.equal header (String.split ~on:',' hd) ->
+      List.fold rest ~init:[] ~f:(fun acc line ->
+        match String.split ~on:',' line with
+        | [ id; amount; description; date ] ->
+          let sth =
+            Domain.Expense.make
+              ~id:(Int.of_string id)
+              ~amount:(Float.of_string amount)
+              ~description
+              ~date
+          in
+          sth :: acc
+        | r ->
+          failwith
+          @@ Printf.sprintf "error parsing one of the rows %s"
+          @@ String.concat ~sep:"," r)
+    | h :: _rest -> failwith @@ Printf.sprintf "header didn't match the schema: %s" h
+    | _ -> failwith "lol nope"
   ;;
 end

@@ -10,22 +10,54 @@ module Expense = struct
 
   let make ~id ~amount ~description ~date = { id; amount; description; date }
 
-  let print =
-    fun e -> Printf.sprintf "%-9d%-20s%-30s%10.2f" e.id e.date e.description e.amount
+  let raw_print e =
+    Printf.sprintf
+      "ID: %d\nDate: %s\nDescription: %s\nAmount: %.2f"
+      e.id
+      e.date
+      e.description
+      e.amount
   ;;
+
+  let print e = Printf.sprintf "%-9d%-20s%-30s%10.2f" e.id e.date e.description e.amount
 end
 
-module Expenses = struct
+module ExpensesStore = struct
   type t =
-    { list : Expense.t list
+    { header : string list
+    ; list : Expense.t list
     ; current_id : int
     }
+
+  type csv_file_contents =
+    { header : string list
+    ; data : string list list
+    }
+
+  let read_csv filename : csv_file_contents option =
+    match filename |> In_channel.read_lines with
+    | [] -> None
+    | header :: data ->
+      let header = String.split ~on:',' header in
+      let data = List.map data ~f:(String.split ~on:',') in
+      Some { header; data }
+  ;;
+
+  let write_csv filename { header; data } =
+    let headers = String.concat ~sep:"," header in
+    data
+    |> List.map ~f:(fun row -> String.concat ~sep:"," row)
+    |> fun lines -> Out_channel.write_lines filename (headers :: lines)
+  ;;
 
   let add_expense expenses ~description ~amount =
     let date = Utils.Date.(now () |> human_string) in
     let id = expenses.current_id in
     let expense = Expense.make ~id ~description ~amount ~date in
-    { list = expense :: expenses.list; current_id = expenses.current_id + 1 }
+    { expenses with
+      list = expense :: expenses.list
+    ; current_id = expenses.current_id + 1
+    }
   ;;
 
   let update_expense epenses ~id ~description ~amount =
@@ -42,7 +74,13 @@ module Expenses = struct
     { t with list }
   ;;
 
-  let make () = { list = []; current_id = 0 }
+  let make ~(list : Expense.t list) =
+    let current_id =
+      Option.map ~f:(fun v -> v.Expense.id + 1) @@ List.last list
+      |> Option.value ~default:0
+    in
+    { list; current_id; header = [] }
+  ;;
 
   let list t =
     Printf.printf "%-9s%-20s%-30s%10s\n" "ID" "Date" "Description" "Amount";
@@ -59,24 +97,12 @@ module Expenses = struct
     Printf.printf "Total expenses: %.2f\n" total
   ;;
 
-  let is_month_matching (e : Expense.t) ~(month : string) : bool =
-    let expense_date = Utils.Date.make e.date in
-    Utils.Date.month expense_date
-    |> Option.value_map ~default:false ~f:(String.equal month)
-  ;;
-
-  let is_year_matching (e : Expense.t) ~(year : string) : bool =
-    let expense_date = Utils.Date.make e.date in
-    let expense_year = Utils.Date.year @@ expense_date in
-    Option.value_map expense_year ~default:false ~f:(String.equal year)
-  ;;
-
   let month_summary t ~month =
     let total =
       List.fold t.list ~init:0. ~f:(fun acc e ->
-        let matching_month = is_month_matching e ~month in
-        let current_year = Option.value_exn @@ Utils.Date.year @@ Utils.Date.now () in
-        let matching_year = is_year_matching e ~year:current_year in
+        let matching_month = Utils.Date.month_equals e.date ~month in
+        let current_year = Option.value_exn @@ Utils.Date.get_year @@ Utils.Date.now () in
+        let matching_year = Utils.Date.year_equals e.date ~year:current_year in
         if matching_month && matching_year then acc +. e.amount else acc)
     in
     Printf.printf "Total expenses for %s: %.2f\n" month total
