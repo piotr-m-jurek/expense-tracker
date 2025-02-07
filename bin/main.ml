@@ -15,7 +15,8 @@ let () =
   print_endline "";
   Domain.ExpensesStore.summary expenses;
   print_endline "";
-  print_endline ""
+  print_endline "";
+  CsvReader.write_csv ~filename:"data.bck.csv" expenses.list
 ;;
 
 (* let () =

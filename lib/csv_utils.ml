@@ -32,12 +32,28 @@ module ExpensesCsv = struct
 
   type t = Domain.Expense.t list
 
-  let serialize _ = []
+  let serialize (t : t) : string list =
+    let rows =
+      t
+      |> List.sort ~compare:(fun (e1 : Domain.Expense.t) (e2 : Domain.Expense.t) ->
+        e1.id - e2.id)
+      |> List.map ~f:(fun (expense : Domain.Expense.t) ->
+        Printf.sprintf
+          "%d,%.2f,%s,%s"
+          expense.id
+          expense.amount
+          expense.description
+          (Utils.Date.utc_string expense.date))
+    in
+    String.concat ~sep:"," header :: rows
+  ;;
 
   let deserialize (lines : string list) : t =
     match lines with
     | hd :: rest when List.equal String.equal header (String.split ~on:',' hd) ->
-      List.fold rest ~init:[] ~f:(fun acc line ->
+      rest
+      |> List.rev
+      |> List.fold ~init:[] ~f:(fun acc line ->
         match String.split ~on:',' line with
         | [ id; amount; description; date ] ->
           let sth =

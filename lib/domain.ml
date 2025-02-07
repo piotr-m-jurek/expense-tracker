@@ -31,40 +31,17 @@ end
 
 module ExpensesStore = struct
   type t =
-    { header : string list
-    ; list : Expense.t list
+    { list : Expense.t list
     ; current_id : int
     }
 
-  type csv_file_contents =
-    { header : string list
-    ; data : string list list
-    }
-
-  let read_csv filename : csv_file_contents option =
-    match filename |> In_channel.read_lines with
-    | [] -> None
-    | header :: data ->
-      let header = String.split ~on:',' header in
-      let data = List.map data ~f:(String.split ~on:',') in
-      Some { header; data }
-  ;;
-
-  let write_csv filename { header; data } =
-    let headers = String.concat ~sep:"," header in
-    data
-    |> List.map ~f:(fun row -> String.concat ~sep:"," row)
-    |> fun lines -> Out_channel.write_lines filename (headers :: lines)
-  ;;
+  let get_list t = t.list
 
   let add_expense expenses ~description ~amount =
     let date = Utils.Date.(now ()) in
     let id = expenses.current_id in
     let expense = Expense.make ~id ~description ~amount ~date in
-    { expenses with
-      list = expense :: expenses.list
-    ; current_id = expenses.current_id + 1
-    }
+    { list = expense :: expenses.list; current_id = expenses.current_id + 1 }
   ;;
 
   let update_expense epenses ~id ~description ~amount =
@@ -83,10 +60,11 @@ module ExpensesStore = struct
 
   let make ~(list : Expense.t list) =
     let current_id =
-      Option.map ~f:(fun v -> v.Expense.id + 1) @@ List.last list
+      List.last list
+      |> Option.map ~f:(fun v -> Expense.(v.id) + 1)
       |> Option.value ~default:0
     in
-    { list; current_id; header = [] }
+    { list; current_id }
   ;;
 
   let list t =

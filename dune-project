@@ -5,9 +5,9 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github piotr-m-jurek/expense-tracker))
 
-(authors "Author Name <author@example.com>")
+(authors "Piotr Malecki-Jurek <piotr.m.jurek@proton.me>")
 
 (maintainers "Maintainer Name <maintainer@example.com>")
 
@@ -19,7 +19,7 @@
  (name expense_tracker)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml core csv)
+ (depends ocaml core csv ocamlformat)
  (tags
   ("add topics" "to describe" your project)))
 
