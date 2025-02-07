@@ -5,6 +5,7 @@ module Date : sig
   type t
 
   val make : string -> t
+  val of_string : string -> t
   val utc_string : t -> string
   val human_string : t -> string
   val now : unit -> t
@@ -12,13 +13,18 @@ module Date : sig
   val get_year : t -> string option
   val pp : Out_channel.t -> t -> unit
   val month_to_string : raw_month:int -> string option
-  val month_equals : string -> month:string -> bool
-  val year_equals : string -> year:string -> bool
+  val month_equals : t -> month:string -> bool
+  val year_equals : t -> year:string -> bool
 end = struct
   type t = UTCString of string
 
   (* TODO: add parsing *)
   let make s = UTCString s
+
+  let of_string s =
+    s |> Time_float.of_string_with_utc_offset |> Time_float.to_string_utc |> make
+  ;;
+
   let utc_string (UTCString s) = s
   let human_string (UTCString s) = List.hd_exn @@ String.split ~on:' ' s
   let now () = Time_float.now () |> Time_float.to_string_utc |> make
@@ -42,14 +48,12 @@ end = struct
     else None
   ;;
 
-  let month_equals (date : string) ~(month : string) : bool =
-    let expense_date = make date in
-    get_month expense_date |> Option.value_map ~default:false ~f:(String.equal month)
+  let month_equals (date : t) ~(month : string) : bool =
+    get_month date |> Option.value_map ~default:false ~f:(String.equal month)
   ;;
 
-  let year_equals (date : string) ~(year : string) : bool =
-    let expense_date = make date in
-    let expense_year = get_year @@ expense_date in
+  let year_equals (date : t) ~(year : string) : bool =
+    let expense_year = get_year date in
     Option.value_map expense_year ~default:false ~f:(String.equal year)
   ;;
 

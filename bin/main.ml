@@ -3,15 +3,18 @@ open Core
 module CsvReader = Csv_utils.CsvOps (Csv_utils.ExpensesCsv)
 
 let () =
-  let expenses = CsvReader.read_csv ~filename:"data.csv" in
+  print_endline "";
+  let raw_expenses = CsvReader.read_csv ~filename:"data.csv" in
   let expenses =
-    Domain.ExpensesStore.make ~list:expenses
+    Domain.ExpensesStore.make ~list:raw_expenses
     |> Domain.ExpensesStore.add_expense ~description:"Flowers" ~amount:13.37
+    |> Domain.ExpensesStore.add_expense ~description:"Coffee" ~amount:2.5
   in
   print_endline "";
   Domain.ExpensesStore.list expenses;
   print_endline "";
   Domain.ExpensesStore.summary expenses;
+  print_endline "";
   print_endline ""
 ;;
 

@@ -5,7 +5,7 @@ module Expense = struct
     { id : int
     ; amount : float
     ; description : string
-    ; date : string
+    ; date : Utils.Date.t
     }
 
   let make ~id ~amount ~description ~date = { id; amount; description; date }
@@ -14,12 +14,19 @@ module Expense = struct
     Printf.sprintf
       "ID: %d\nDate: %s\nDescription: %s\nAmount: %.2f"
       e.id
-      e.date
+      (Utils.Date.utc_string e.date)
       e.description
       e.amount
   ;;
 
-  let print e = Printf.sprintf "%-9d%-20s%-30s%10.2f" e.id e.date e.description e.amount
+  let print e =
+    Printf.sprintf
+      "%-9d%-20s%-30s%10.2f"
+      e.id
+      (Utils.Date.human_string e.date)
+      e.description
+      e.amount
+  ;;
 end
 
 module ExpensesStore = struct
@@ -51,7 +58,7 @@ module ExpensesStore = struct
   ;;
 
   let add_expense expenses ~description ~amount =
-    let date = Utils.Date.(now () |> human_string) in
+    let date = Utils.Date.(now ()) in
     let id = expenses.current_id in
     let expense = Expense.make ~id ~description ~amount ~date in
     { expenses with

@@ -45,7 +45,7 @@ module ExpensesCsv = struct
               ~id:(Int.of_string id)
               ~amount:(Float.of_string amount)
               ~description
-              ~date
+              ~date:(Utils.Date.of_string date)
           in
           sth :: acc
         | r ->
