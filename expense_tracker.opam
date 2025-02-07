@@ -3,17 +3,18 @@ opam-version: "2.0"
 synopsis: "A short synopsis"
 description: "A longer description"
 maintainer: ["Maintainer Name <maintainer@example.com>"]
-authors: ["Author Name <author@example.com>"]
+authors: ["Piotr Malecki-Jurek <piotr.m.jurek@proton.me>"]
 license: "LICENSE"
 tags: ["add topics" "to describe" "your" "project"]
-homepage: "https://github.com/username/reponame"
+homepage: "https://github.com/piotr-m-jurek/expense-tracker"
 doc: "https://url/to/documentation"
-bug-reports: "https://github.com/username/reponame/issues"
+bug-reports: "https://github.com/piotr-m-jurek/expense-tracker/issues"
 depends: [
   "dune" {>= "3.17"}
   "ocaml"
   "core"
   "csv"
+  "ocamlformat"
   "odoc" {with-doc}
 ]
 build: [
@@ -30,4 +31,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/username/reponame.git"
+dev-repo: "git+https://github.com/piotr-m-jurek/expense-tracker.git"

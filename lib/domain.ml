@@ -58,7 +58,7 @@ module ExpensesStore = struct
     { t with list }
   ;;
 
-  let make ~(list : Expense.t list) =
+  let make (list : Expense.t list) =
     let current_id =
       List.last list
       |> Option.map ~f:(fun v -> Expense.(v.id) + 1)

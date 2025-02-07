@@ -4,9 +4,9 @@ module CsvReader = Csv_utils.CsvOps (Csv_utils.ExpensesCsv)
 
 let () =
   print_endline "";
-  let raw_expenses = CsvReader.read_csv ~filename:"data.csv" in
   let expenses =
-    Domain.ExpensesStore.make ~list:raw_expenses
+    CsvReader.read_csv ~filename:"data.csv"
+    |> Domain.ExpensesStore.make
     |> Domain.ExpensesStore.add_expense ~description:"Flowers" ~amount:13.37
     |> Domain.ExpensesStore.add_expense ~description:"Coffee" ~amount:2.5
   in
