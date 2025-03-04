@@ -12,11 +12,13 @@
         - [x] update
         - [x] list 
         - [x] list monthly
-- [ ] Build FS interactions 
-    - [ ] CSV read
-    - [ ] CSV write
-- [ ] Build CLI
-- [ ] connect Domain with FS interactions
-    - [ ] current id
-    - [ ] read expense state
-    - [ ] write expense state
+- [x] Build FS interactions 
+    - [x] CSV read
+    - [x] CSV write
+- [x] Build CLI
+    - [x] write everything in plain ocaml
+    - [x] use library from core
+- [x] connect Domain with FS interactions
+    - [x] current id
+    - [x] read expense state
+    - [x] write expense state
