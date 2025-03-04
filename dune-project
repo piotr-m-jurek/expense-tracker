@@ -19,7 +19,7 @@
  (name expense_tracker)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml core csv ocamlformat core_unix utop ppx_jane)
+ (depends ocaml core csv ocamlformat core_unix ppx_jane)
  (tags
   ("add topics" "to describe" your project)))
 
