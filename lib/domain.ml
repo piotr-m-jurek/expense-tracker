@@ -74,12 +74,14 @@ module ExpensesStore = struct
     |> List.sort ~compare:(fun a b -> Int.compare a.Expense.id b.Expense.id)
     |> List.map ~f:Expense.print
     |> String.concat ~sep:"\n"
-    |> Printf.printf "%s\n"
+    |> Printf.printf "%s\n";
+    t
   ;;
 
   let summary t =
     let total = List.fold t.list ~init:0. ~f:(fun acc e -> acc +. e.amount) in
-    Printf.printf "Total expenses: %.2f\n" total
+    Printf.printf "Total expenses: %.2f\n" total;
+    t
   ;;
 
   let month_summary t ~month =
@@ -90,6 +92,7 @@ module ExpensesStore = struct
         let matching_year = Utils.Date.year_equals e.date ~year:current_year in
         if matching_month && matching_year then acc +. e.amount else acc)
     in
-    Printf.printf "Total expenses for %s: %.2f\n" month total
+    Printf.printf "Total expenses for %s: %.2f\n" month total;
+    t
   ;;
 end
