@@ -15,6 +15,9 @@ depends: [
   "core"
   "csv"
   "ocamlformat"
+  "core_unix"
+  "utop"
+  "ppx_jane"
   "odoc" {with-doc}
 ]
 build: [

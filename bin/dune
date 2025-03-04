@@ -1,4 +1,6 @@
 (executable
  (public_name expense_tracker)
  (name main)
- (libraries expense_tracker))
+ (libraries expense_tracker core core_unix.command_unix)
+ (preprocess (pps ppx_jane))
+ )
