@@ -30,7 +30,7 @@ let add =
   Command.basic
     ~summary:"Add expense to the system"
     (let%map_open.Command description =
-       flag "--descripiton" (required string) ~doc:"short description of the expense"
+       flag "--description" (required string) ~doc:"short description of the expense"
      and amount = flag "--amount" (required float) ~doc:"expense amount" in
      fun () -> do_command @@ Domain.ExpensesStore.add_expense ~amount ~description)
 ;;

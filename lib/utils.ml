@@ -49,6 +49,7 @@ end = struct
   ;;
 
   let month_equals (date : t) ~(month : string) : bool =
+    let month = String.pad_left ~char:'0' ~len:2 month in
     get_month date |> Option.value_map ~default:false ~f:(String.equal month)
   ;;
 
